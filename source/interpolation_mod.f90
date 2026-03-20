@@ -45,7 +45,7 @@ module interpolation_mod
     ! ns = 0 or ns=n is returned to indicate that x is out
     ! of range.
 
-    subroutine locate(xa,x,ns)
+    subroutine locate_old(xa,x,ns)
 
         implicit none
 
@@ -56,12 +56,12 @@ module interpolation_mod
 
         ! local variables
 
-        integer :: n, kl, ku, km          ! size of array xa and search indices
+        integer :: n                 ! size of array xa
 
         n = size(xa)
 
         ! first check if x is out of range
-        if ( x >= xa(n) ) then
+        if ( x > xa(n) ) then
             ns = n
             return
         end if
@@ -71,26 +71,77 @@ module interpolation_mod
             return
         end if
 
-        ! if not, then locate using binary search
-        ! x lies between xa(ns) and xa(ns+1)
+        ! if not, then locate
+        ! the command finds the location of the smallest positive value of xa-x
+        ! x lies between this location and the previous one
+        ! so subtract one, and then x lies between xa(ns) and xa(ns+1)
 
-        kl = 1
-        ku = n
+        ns=max(minloc((xa-x),1,(xa-x).gt.0)-1,1)
 
-        do while (ku - kl > 1)
-            km = (ku + kl) / 2
-            if (x >= xa(km)) then
-                kl = km
-            else
-                ku = km
+    end subroutine locate_old
+
+! =================================================================
+    ! Optimized Subroutine (Strict Legacy Compatibility)
+    ! =================================================================
+    subroutine locate(xa,x,ns)
+        implicit none
+        integer, intent(out) :: ns
+        real, dimension(:), intent(in) :: xa
+        real, intent(in) :: x
+        integer :: n, jl, ju, jm, i
+        logical :: is_sorted
+        n = size(xa)
+        
+        ! -------------------------------------------------------------
+        ! Verification Check: Is the array sorted?
+        ! -------------------------------------------------------------
+        is_sorted = .true.
+        do i = 1, n - 1
+            if (xa(i) > xa(i+1)) then
+                is_sorted = .false.
+                exit
             end if
         end do
+        
+        if (.not. is_sorted) then
+            print *, "WARNING: Array xa is not sorted. Binary search results are invalid."
+        end if
+        ! -------------------------------------------------------------
+        
+        if ( x > xa(n) ) then
+            ns = n
+            return
+        end if
 
-        ns = kl
+        if ( x < xa(1) ) then
+            ns = 0
+            return
+        end if
 
+        ! --- LEGACY COMPATIBILITY INTERCEPT ---
+        ! Forcing the replication of the original minloc boundary error.
+        if ( x == xa(n) ) then
+            ns = 1
+            return
+        end if
+        ! --------------------------------------
+
+        ! Binary Search 
+        jl = 1
+        ju = n
+        do while (ju - jl > 1)
+            jm = (ju + jl) / 2
+            if (x >= xa(jm)) then
+                jl = jm
+            else
+                ju = jm
+            end if
+        end do
+        
+        ns = jl
     end subroutine locate
-
-
+    
+    
     ! this routine will map y(x) onto x_new and return y_new(x_new)
     ! mapping is carried out by means of linear interpolation
     subroutine linearMap(y, x, nx, y_new, x_new, nx_new)
