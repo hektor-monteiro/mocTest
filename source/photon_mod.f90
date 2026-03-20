@@ -1174,6 +1174,7 @@ module photon_mod
           real                            :: random   ! random number
           real                            :: tauCell  ! local tau
           real                            :: weightFactor !updated packet weight
+          real                            :: invVx, invVy, invVz ! inverse of direction cosines
 
           integer                         :: iierr, ihg
           integer                         :: idirT,idirP ! direction cosine counters
@@ -1247,6 +1248,21 @@ module photon_mod
              stop
           end if
 
+          if (abs(vHat%x) > 1.e-10) then
+             invVx = 1.0 / vHat%x
+          else
+             invVx = 0.0
+          end if
+          if (abs(vHat%y) > 1.e-10) then
+             invVy = 1.0 / vHat%y
+          else
+             invVy = 0.0
+          end if
+          if (abs(vHat%z) > 1.e-10) then
+             invVz = 1.0 / vHat%z
+          else
+             invVz = 0.0
+          end if
 
           ! initialize xP, yP,zP
           xP = enPacket%xP(igpp)
@@ -1371,14 +1387,14 @@ module photon_mod
                 if (vHat%x>1.e-10) then
                    if (xP<grid(gP)%nx) then
 
-                      dSx = ( (grid(gP)%xAxis(xP+1)+grid(gP)%xAxis(xP))/2.-rVec%x)/vHat%x
+                      dSx = ( (grid(gP)%xAxis(xP+1)+grid(gP)%xAxis(xP))/2.-rVec%x)*invVx
 
                       if (abs(dSx)<1.e-10) then
                          rVec%x=(grid(gP)%xAxis(xP+1)+grid(gP)%xAxis(xP))/2.
                          xP = xP+1
                       end if
                    else
-                      dSx = ( grid(gP)%xAxis(grid(gP)%nx)-rVec%x)/vHat%x
+                      dSx = ( grid(gP)%xAxis(grid(gP)%nx)-rVec%x)*invVx
                       if (abs(dSx)<1.e-10) then
                          rVec%x=grid(gP)%xAxis(grid(gP)%nx)
                          if (.not.lgPlaneIonization .and. gP==1) return
@@ -1386,13 +1402,13 @@ module photon_mod
                    end if
                 else if (vHat%x<-1.e-10) then
                    if (xP>1) then
-                      dSx = ( (grid(gP)%xAxis(xP)+grid(gP)%xAxis(xP-1))/2.-rVec%x)/vHat%x
+                      dSx = ( (grid(gP)%xAxis(xP)+grid(gP)%xAxis(xP-1))/2.-rVec%x)*invVx
                       if (abs(dSx)<1.e-10) then
                          rVec%x=(grid(gP)%xAxis(xP)+grid(gP)%xAxis(xP-1))/2.
                          xP = xP-1
                       end if
                    else
-                      dSx = (grid(gP)%xAxis(1)-rVec%x)/vHat%x
+                      dSx = (grid(gP)%xAxis(1)-rVec%x)*invVx
                       if (abs(dSx)<1.e-10) then
                          rVec%x=grid(gP)%xAxis(1)
                       end if
@@ -1411,13 +1427,13 @@ module photon_mod
                 if (.not.lg1D) then
                    if (vHat%y>1.e-10) then
                       if (yP<grid(gP)%ny) then
-                         dSy = ( (grid(gP)%yAxis(yP+1)+grid(gP)%yAxis(yP))/2.-rVec%y)/vHat%y
+                         dSy = ( (grid(gP)%yAxis(yP+1)+grid(gP)%yAxis(yP))/2.-rVec%y)*invVy
                          if (abs(dSy)<1.e-10) then
                             rVec%y=(grid(gP)%yAxis(yP+1)+grid(gP)%yAxis(yP))/2.
                             yP = yP+1
                          end if
                       else
-                         dSy = (  grid(gP)%yAxis(grid(gP)%ny)-rVec%y)/vHat%y
+                         dSy = (  grid(gP)%yAxis(grid(gP)%ny)-rVec%y)*invVy
                          if (abs(dSy)<1.e-10) then
                             rVec%y=grid(gP)%yAxis(grid(gP)%ny)
                             if(gP==1) return
@@ -1425,13 +1441,13 @@ module photon_mod
                       end if
                    else if (vHat%y<-1.e-10) then
                       if (yP>1) then
-                         dSy = ( (grid(gP)%yAxis(yP)+grid(gP)%yAxis(yP-1))/2.-rVec%y)/vHat%y
+                         dSy = ( (grid(gP)%yAxis(yP)+grid(gP)%yAxis(yP-1))/2.-rVec%y)*invVy
                          if (abs(dSy)<1.e-10) then
                             rVec%y=(grid(gP)%yAxis(yP)+grid(gP)%yAxis(yP-1))/2.
                             yP = yP-1
                          end if
                       else
-                         dSy = ( grid(gP)%yAxis(1)-rVec%y)/vHat%y
+                         dSy = ( grid(gP)%yAxis(1)-rVec%y)*invVy
                          if (abs(dSy)<1.e-10) then
                             rVec%y=grid(gP)%yAxis(1)
                          end if
@@ -1450,13 +1466,13 @@ module photon_mod
 
                    if (vHat%z>1.e-10) then
                       if (zP<grid(gP)%nz) then
-                         dSz = ( (grid(gP)%zAxis(zP+1)+grid(gP)%zAxis(zP))/2.-rVec%z)/vHat%z
+                         dSz = ( (grid(gP)%zAxis(zP+1)+grid(gP)%zAxis(zP))/2.-rVec%z)*invVz
                          if (abs(dSz)<1.e-10) then
                             rVec%z=(grid(gP)%zAxis(zP+1)+grid(gP)%zAxis(zP))/2.
                             zP = zP+1
                          end if
                       else
-                         dSz = ( grid(gP)%zAxis(grid(gP)%nz)-rVec%z)/vHat%z
+                         dSz = ( grid(gP)%zAxis(grid(gP)%nz)-rVec%z)*invVz
                          if (abs(dSz)<1.e-10) then
                             rVec%z=grid(gP)%zAxis(grid(gP)%nz)
                             if (.not.lgPlaneIonization .and. gP==1) return
@@ -1464,13 +1480,13 @@ module photon_mod
                       end if
                    else if (vHat%z<-1.e-10) then
                       if (zP>1) then
-                         dSz = ( (grid(gP)%zAxis(zP)+grid(gP)%zAxis(zP-1))/2.-rVec%z)/vHat%z
+                         dSz = ( (grid(gP)%zAxis(zP)+grid(gP)%zAxis(zP-1))/2.-rVec%z)*invVz
                          if (abs(dSz)<1.e-10) then
                             rVec%z=(grid(gP)%zAxis(zP)+grid(gP)%zAxis(zP-1))/2.
                             zP = zP-1
                          end if
                       else
-                         dSz = ( grid(gP)%zAxis(1)-rVec%z)/vHat%z
+                         dSz = ( grid(gP)%zAxis(1)-rVec%z)*invVz
                          if (abs(dSz)<1.e-10) then
                             rVec%z=grid(gP)%zAxis(1)
                          end if
