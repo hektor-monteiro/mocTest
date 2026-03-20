@@ -92,21 +92,21 @@ module interpolation_mod
         logical :: is_sorted
         n = size(xa)
         
-        ! -------------------------------------------------------------
-        ! Verification Check: Is the array sorted?
-        ! -------------------------------------------------------------
-        is_sorted = .true.
-        do i = 1, n - 1
-            if (xa(i) > xa(i+1)) then
-                is_sorted = .false.
-                exit
-            end if
-        end do
-        
-        if (.not. is_sorted) then
-            print *, "WARNING: Array xa is not sorted. Binary search results are invalid."
-        end if
-        ! -------------------------------------------------------------
+!        ! -------------------------------------------------------------
+!        ! Verification Check: Is the array sorted?
+!        ! -------------------------------------------------------------
+!        is_sorted = .true.
+!        do i = 1, n - 1
+!            if (xa(i) > xa(i+1)) then
+!                is_sorted = .false.
+!                exit
+!            end if
+!        end do
+!        
+!        if (.not. is_sorted) then
+!            print *, "WARNING: Array xa is not sorted. Binary search results are invalid."
+!        end if
+!        ! -------------------------------------------------------------
         
         if ( x > xa(n) ) then
             ns = n
@@ -447,7 +447,7 @@ subroutine linear_interpolation(xa, ya, x, y)
     real, dimension(:), intent(inout) :: xa, ya   ! Input arrays of x and y values
     real, intent(in) :: x              ! The x value to interpolate
     real, intent(out) :: y             ! Interpolated y value
-    integer :: i, j, n
+    integer :: i, n
     ! Determine the length of the input arrays
     n = size(xa)
     ! check if x is within range
@@ -460,7 +460,11 @@ subroutine linear_interpolation(xa, ya, x, y)
     end if
 
     ! Find the index where x is in the interval [xa(i), xa(i+1)]
-    i = max(1, min(n - 1, maxval([(j, j = 1, n - 1)], mask=(x >= xa(1:n-1) .and. x <= xa(2:n)))))
+    ! Utilize the optimized locate binary search (O(log n) with zero allocations)
+    call locate(xa, x, i)
+
+    ! Bound i strictly to [1, n-1] to prevent out-of-bounds in interpolation math
+    i = max(1, min(n - 1, i))
 
     ! Compute the interpolated value
     y = ya(i) + (ya(i+1) - ya(i)) * (x - xa(i)) / (xa(i+1) - xa(i))
