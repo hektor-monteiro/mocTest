@@ -1,0 +1,111 @@
+ MOCASSIN version 72b4cdf-dirty
+ Data directories: /usr/share/mocassin/data,
+                   /usr/share/mocassin/dustData
+
+           0 input file: input/input.in
+ Ndust file input/test_dust_21x21x21.dat
+ ! readInput: [talk] ionising source positioned at 0.,0.,0.
+ mother nx, ny, nz          21          21          21
+
+ in initCartesianGrid
+ in initGammaCont
+ out initGammaCont
+ dTheta :   0.157079637
+ dPhi :   0.157079637
+ out initCartesianGrid
+ in initXSecArray
+ in makeDustXSec
+ ! makeDustXSec : Size Distribution
+  index, a [um], da [um], weight
+           1   9.99999975E-05   4.70000014E-05  0.659205258
+           2   1.46999999E-04   5.80000014E-05  0.210713387
+           3   2.16000000E-04   8.55000035E-05   8.04584250E-02
+           4   3.18000006E-04   1.25999999E-04   3.07126548E-02
+           5   4.68000013E-04   1.85500001E-04   1.17120240E-02
+           6   6.89000008E-04   2.72500009E-04   4.45652148E-03
+           7   1.01300003E-03   4.00500023E-04   1.69657567E-03
+           8   1.49000005E-03   5.89499949E-04   6.46838394E-04
+           9   2.19199993E-03   8.67500028E-04   2.46560114E-04
+          10   3.22500011E-03   1.27599994E-03   9.39388774E-05
+          11   4.74399980E-03   1.87699986E-03   3.57931640E-05
+          12   6.97899982E-03   2.76100030E-03   1.36377839E-05
+          13   1.02660004E-02   4.06099996E-03   5.19579044E-06
+          14   1.51009997E-02   5.97399939E-03   1.97981763E-06
+          15   2.22139992E-02   8.78849998E-03   7.54424946E-07
+          16   3.26780006E-02   1.29275005E-02   2.87446682E-07
+          17   4.80690002E-02   1.90165006E-02   1.09525310E-07
+          18   7.07110018E-02   2.79734991E-02   4.17322674E-08
+          19  0.104015999       4.11494970E-02   1.59012465E-08
+          20  0.153009996       6.05315007E-02   6.05883788E-09
+          21  0.225079000       8.90425071E-02   2.30858910E-09
+          22  0.331095010      0.130982995       8.79640916E-10
+          23  0.487044990      0.192677483       3.35168338E-10
+          24  0.716449976      0.283431023       1.27708732E-10
+          25   1.05390704      0.416931033       4.86607421E-11
+          26   1.55031204      0.613311946       1.85411773E-11
+          27   2.28053093      0.902189970       7.06472337E-12
+          28   3.35469198       1.32713342       2.69186388E-12
+          29   4.93479776       1.95223260       1.02567867E-12
+          30   7.25915718       2.87176108       3.90813385E-13
+          31   10.6783199       4.22440004       1.48911238E-13
+          32   15.7079573       6.21415138       5.67395116E-14
+          33   23.1066227       9.14110184       2.16193945E-14
+          34   33.9901619       13.4466887       8.23762072E-15
+          35   50.0000000       16.0098381       2.54047415E-15
+ ! makeDustXSec: [warning] extinction files  do not have the same number of frequency points
+ ! makeDustXsec: Grain Abundances and sizes used:
+ (icomp, index, label, abundance, sublimation T, amin, amax)
+           1           1 Ssil_dl                         0.699999988       1400.00000      0.300000012       1.00000000
+           1           2 Sh2O_ice                        0.200000003       273.000000       10.0000000       50.2999992
+           1           3 forst-cryst-perp1-kyoto-uvx     0.100000001       1000.00000      0.100000001       1.00000000
+
+ out initXSecArray
+ in setContinuum none                                              blackbody
+ contShape blackbody
+ RStar =    7.83627030E-09  [e18 cm]
+ Q(H) =    8.45521682E+11  [e36 phot/s]
+ LStar =    70.0000000      [e36erg/s]
+ deltaE =    7.00000010E-06  [e36 erg/s]
+ out setContinuum
+ in fillGrid
+ in setMotherGrid
+          21          21          21
+ ! setMotherGrid: active cells :        4168
+ Mothergrid:
+ Total gas mass of ionized region by mass [1.e45 g]:    8.03440214E-12
+                                          [Msol]   :    4.03728724
+ Total dust mass of species Ssil_dl                        [Msol]:    3.27987149E-02
+ Total dust mass of species Sh2O_ice                       [Msol]:    2.65686344E-02
+ Total dust mass of species forst-cryst-perp1-kyoto-uvx    [Msol]:    6.64184941E-03
+ Total dust mass of ionized region by mass [1.e45 g]:    1.31361596E-13
+                                           [Msol]   :    6.60092011E-02
+ Total volume of the active region [e45 cm^3]:    2.13401600E+09
+ Total ionizing flux :   70.0000000
+ deltaE :   7.00000010E-06
+ out setMotherGrid
+ ! fillGrid: total number of active cells over all grids:         4168
+ fillGrid: Actual total gas mass [1.e45 g]:    8.03440214E-12
+ fillGrid: Actual total gas mass [Msol]:    4.03969717
+ fillGrid: Actual Total dust mass of species Ssil_dl                        [Msol]:    3.27987149E-02
+ fillGrid: Actual Total dust mass of species Sh2O_ice                       [Msol]:    2.65686344E-02
+ fillGrid: Actual Total dust mass of species forst-cryst-perp1-kyoto-uvx    [Msol]:    6.64184941E-03
+ fillGrid: Actual total dust mass [1.e45 g]:    1.31361596E-13
+ fillGrid: Actual total dust mass [Msol]:    6.60486072E-02
+ ! setSubGrids: number of diffuse packets per active cell:            0
+ Origin at mother grid cell:            11          11          11
+ Geometric grid corrections for grid            1  :    3.99999925E+16   3.99999925E+16   3.99999925E+16
+ out fillGrid
+ Grid :            1
+ active cells:         4168
+ active elements:            9
+ ! mocassin: calling dustDriver
+ ! mocassin: dustDriver done
+ ! mocassin: calling MCIterationDriver
+ ! iterateMC: ionizationDriver in           1
+ ! iterateMC: ionizationDriver out           1
+ ! iterateMC: adding dust contribution to total opacity            1
+ ! iterateMC: dust contribution to total opacity added            1
+ ! iterateMC: emissionDriver in           1
+ ! iterateMC: emissionDriver out           1
+ Balmer Jump: [erg/s/A]    2.52870252E+33
+ iterateMC: Starting transfer for ionising source            1

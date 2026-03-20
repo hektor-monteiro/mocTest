@@ -2163,10 +2163,10 @@ endif
                  ! for T4=(6000/1e4)
                  x2 = HeIrecLineCoeff(i,1,1)*((0.6)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.6))
                  ! estimated slope
-                 coeff = (LOG10(x1)-LOG10(x2))/(LOG10(0.5)-LOG10(0.6))
+                 coeff = (LOG10(x1)-LOG10(x2))/(-0.079181246)
                  
                  !final extrapolation
-                 HeIRecLines(i) = (x1/0.5**coeff)*T4**coeff
+                 HeIRecLines(i) = (x1/(0.5**coeff))*T4**coeff
               end do
           elseif(denint==0) then
               do i = 1, 34                 
@@ -2175,10 +2175,10 @@ endif
                  ! for T4=(6000/1e4)
                  x2 = HeIrecLineCoeff(i,1,1)*((0.6)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.6))
                  ! estimated slope
-                 coeff = (LOG10(x1)-LOG10(x2))/(LOG10(0.5)-LOG10(0.6))
+                 coeff = (LOG10(x1)-LOG10(x2))/(-0.079181246)
                  
                  !final extrapolation
-                 HeIRecLines(i) = (x1/0.5**coeff)*T4**coeff
+                 HeIRecLines(i) = (x1/(0.5**coeff))*T4**coeff
               end do
           elseif(denint==3) then
               do i = 1, 34
@@ -2187,10 +2187,10 @@ endif
                  ! for T4=(6000/1e4)
                  x2 = HeIrecLineCoeff(i,3,1)*((0.6)**(HeIrecLineCoeff(i,3,2)))*exp(HeIrecLineCoeff(i,3,3)/(0.6))
                  ! estimated slope
-                 coeff = (LOG10(x1)-LOG10(x2))/(LOG10(0.5)-LOG10(0.6))
+                 coeff = (LOG10(x1)-LOG10(x2))/(-0.079181246)
                  
                  !final extrapolation
-                 HeIRecLines(i) = (x1/0.5**coeff)*T4**coeff
+                 HeIRecLines(i) = (x1/(0.5**coeff))*T4**coeff
               end do
           end if
        
