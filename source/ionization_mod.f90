@@ -10,6 +10,7 @@ module ionization_mod
     real, allocatable :: contBoltz(:)       ! Boltzman factors for the continuum array
     real, allocatable :: FFOpacity(:)       ! FF opacity
     real, allocatable :: log10nuArray(:)    ! log10(nu) at this cell
+    real, allocatable :: expMinusNu(:)      ! Precalculated exp(-nuArray(i))
 
     real, allocatable &
          &:: density(:,:)               ! abundance*ionDensity*HDen [cm^-3]
@@ -106,12 +107,18 @@ module ionization_mod
                 print*, "! ionizationDriver: can't allocate grid memory"
                 stop
             end if
+            allocate(expMinusNu(nbins), stat = err)
+            if (err /= 0) then
+                print*, "! ionizationDriver: can't allocate grid memory"
+                stop
+            end if
 
             contBoltz = 0.
             FFOpacity = 0.
             gauntFF = 0.
             gauntFFHeII = 0.
             log10nuArray = log10(nuArray)
+            expMinusNu = exp(-nuArray)
 
             firstLg = .false.
 
@@ -140,6 +147,7 @@ module ionization_mod
         integer :: max                          ! upper nu limit given by 0 exp
 
         real :: exponent                        ! exponenent
+        real :: expTe1RydTeUsed                 ! precalculated exp(-Te1Ryd/TeUsed)
         real, save :: TeOld1=-1., TeOld2=-1.    ! te on last run of sub
 
         ! correction factors for induced recombination
@@ -148,10 +156,11 @@ module ionization_mod
         ! check for temperature changes or for first evaluation
         if ( (TeOld1 /= TeUsed) .or. (contBoltz(1) <= 0.) ) then
             TeOld1 = TeUsed
+            expTe1RydTeUsed = exp(-(Te1Ryd / TeUsed))
             do i = 1, nbins
                 exponent = (Te1Ryd / TeUsed) + nuArray(i)
                 if( exponent > 84.) exit
-                contBoltz(i) = exp(-exponent)
+                contBoltz(i) = expTe1RydTeUsed * expMinusNu(i)
             end do
 
             ! set max
