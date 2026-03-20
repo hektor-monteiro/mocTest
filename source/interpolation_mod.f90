@@ -56,12 +56,12 @@ module interpolation_mod
 
         ! local variables
 
-        integer :: n                 ! size of array xa
+        integer :: n, kl, ku, km          ! size of array xa and search indices
 
         n = size(xa)
 
         ! first check if x is out of range
-        if ( x > xa(n) ) then
+        if ( x >= xa(n) ) then
             ns = n
             return
         end if
@@ -71,12 +71,22 @@ module interpolation_mod
             return
         end if
 
-        ! if not, then locate
-        ! the command finds the location of the smallest positive value of xa-x
-        ! x lies between this location and the previous one
-        ! so subtract one, and then x lies between xa(ns) and xa(ns+1)
+        ! if not, then locate using binary search
+        ! x lies between xa(ns) and xa(ns+1)
 
-        ns=max(minloc((xa-x),1,(xa-x).gt.0)-1,1)
+        kl = 1
+        ku = n
+
+        do while (ku - kl > 1)
+            km = (ku + kl) / 2
+            if (x >= xa(km)) then
+                kl = km
+            else
+                ku = km
+            end if
+        end do
+
+        ns = kl
 
     end subroutine locate
 
