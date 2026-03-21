@@ -21,6 +21,15 @@ module photon_mod
     integer     , parameter :: safeLim = 10000          ! safety limit for the loops
     integer                        :: totalEscaped
 
+    ! --- NEW: Pre-calculated Volume Storage ---
+    type volume_storage
+        real, allocatable :: v(:,:,:)
+    end type volume_storage
+    
+    type(volume_storage), allocatable :: cell_volumes(:)
+    logical                           :: volumes_initialized = .false.
+    ! ------------------------------------------
+    
     contains
 
     subroutine energyPacketDriver(iStar, n, grid, gpLoc, cellLoc)
@@ -63,6 +72,10 @@ module photon_mod
         if (iStar == 0) then
            deltaE(0) = grid(gpLoc)%LdiffuseLoc(grid(gpLoc)%active(cellLoc(1),cellLoc(2),cellLoc(3)))/NphotonsDiffuseLoc
         end if
+        
+        ! --- NEW: Initialize volumes if not already done ---
+        call initCellVolumes(grid)
+        ! ---------------------------------------------------
 
         call date_and_time(values=dt)
         msec=dt(8)
@@ -1360,13 +1373,13 @@ module photon_mod
           !print*, tauCell, passProb, weightFactor
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-          ! speed up photons that my be trapped
-          if (lgPlaneIonization) then
-             safeLimit=5000
-          else
-             safeLimit=50000
-!             safeLimit=500
-          end if
+!          ! speed up photons that my be trapped
+!          if (lgPlaneIonization) then
+!             safeLimit=5000
+!          else
+!             safeLimit=50000
+!!             safeLimit=500
+!          end if
           
           
           do i = 1, safeLimit
@@ -1614,8 +1627,8 @@ module photon_mod
              tauCell = dS*grid(gP)%opacity(grid(gP)%active(xP,yP,zP), enPacket%nuP)
 
 
-             ! find the volume of this cell
-             dV = getVolume(grid(gP), xP,yP,zP)
+             ! find the volume of this cell via pre-calculated array
+             dV = cell_volumes(gP)%v(xP,yP,zP)
              
              !=============================================================
              ! force skip for high tau cells
@@ -3227,6 +3240,32 @@ module photon_mod
 
 end subroutine energyPacketDriver
 
+! subroutine to pre-calculate cell volumes once
+    subroutine initCellVolumes(grid)
+        implicit none
+        type(grid_type), dimension(:), intent(in) :: grid
+        integer :: ig, ix, iy, iz
+        integer :: numGrids
+
+        if (.not. volumes_initialized) then
+            numGrids = size(grid)
+            allocate(cell_volumes(numGrids))
+            
+            do ig = 1, numGrids
+                allocate(cell_volumes(ig)%v(grid(ig)%nx, grid(ig)%ny, grid(ig)%nz))
+                
+                do ix = 1, grid(ig)%nx
+                    do iy = 1, grid(ig)%ny
+                        do iz = 1, grid(ig)%nz
+                            cell_volumes(ig)%v(ix,iy,iz) = getVolume(grid(ig), ix, iy, iz)
+                        end do
+                    end do
+                end do
+            end do
+            
+            volumes_initialized = .true.
+        end if
+    end subroutine initCellVolumes
 
  end module photon_mod
 
