@@ -722,11 +722,65 @@ module photon_mod
              end if
 
         end subroutine getNu
+        
+        !#############################################################################
+        
+! this subroutine determines the frequency of a newly created photon packet
+        ! according to the given probability density
+        ! optimized: utilizes bisection (binary search) to locate nu on array
+        subroutine getNu2(probDen, nuP)
+
+            real, dimension(:), intent(in) :: probDen    ! probability density function
+            integer, intent(out)           :: nuP        ! frequency index of the new packet
+
+            real                           :: random     ! random number
+            integer                        :: ilow, ihigh, imid ! bisection indices
+
+            ! get a random number
+            call random_number(random)
+
+            ! Safely handle edge cases without an arbitrary 10,000 iteration limit
+            do while (random <= 0.0 .or. random >= 0.9999999)
+               call random_number(random)
+            end do
+
+            ! Binary search (bisection) matching the exact index mapping of the legacy code
+            nuP = 1
+            ilow = 1
+            ihigh = nbins
+
+            do while (ilow <= ihigh)
+               imid = (ilow + ihigh) / 2
+               if (probDen(imid) <= random) then
+                  nuP = imid
+                  ilow = imid + 1
+               else
+                  ihigh = imid - 1
+               end if
+            end do
+
+            ! Legacy clamp: The original code manually shifts indices away from 
+            ! the lower boundary and clamps the upper boundary. 
+            ! This prevents nuP=1 which causes zero-opacity divide-by-zero crashes.
+            if (nuP < nbins - 1) then
+               nuP = nuP + 1
+            end if
+
+            ! Preserved legacy debug output
+            if (nuP >= nbins) then
+               print*, 'random: ', random
+               print*, 'probDen: ', probDen
+            end if
+
+          end subroutine getNu2
+          
+          
+        !#############################################################################
 
         ! this subroutine determines the frequency of a newly created photon packet
         ! according to the given probability density
         ! does not use bisection to locate nu on array
-        subroutine getNu2(probDen, nuP)
+        subroutine getNu2_ori(probDen, nuP)
 
             real, dimension(:), intent(in) :: probDen    ! probability density function
 
@@ -770,7 +824,7 @@ module photon_mod
                print*, 'probDen: ', probDen
             end if
 
-          end subroutine getNu2
+          end subroutine getNu2_ori
 
 
         ! this function creates a new photon packet
