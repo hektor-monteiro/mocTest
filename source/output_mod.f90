@@ -5,6 +5,9 @@ module output_mod
     use constants_mod
     use emission_mod
     use photon_mod
+    use atom_H
+    use atom_He
+    use atom_heavy
 
     contains
 
@@ -2024,48 +2027,8 @@ endif
         real                       :: hb          ! emissivity of H 4->2
         real                       :: fh          ! emissivity of H
 
-
-        T4 = TeUsed / 10000.
-
-        ! do hydrogenic ions first
-
-
-        ! read in HI recombination lines [e-25 ergs*cm^3/s]
-        ! (Storey and Hummer MNRAS 272(1995)41)
-!        close(94)
-!        open(unit = 94,  action="read", file = "data/r1b0100.dat", status = "old", position = "rewind", iostat=ios)
-!        if (ios /= 0) then
-!            print*, "! RecLinesEmission: can't open file: data/r1b0100.dat"
-!            stop
-!        end if
-!        do iup = 15, 3, -1
-!            read(94, fmt=*) (HIRecLines(iup, ilow), ilow = 2, min(8, iup-1))
-!        end do
-
-!        close(94)
-
         ! calculate Hbeta
-        ! Hbeta = 2530./(TeUsed**0.833) ! TeUsed < 26000K CASE
-        ! fits to Storey and Hummer MNRAS 272(1995)41
-!        Hbeta = 10**(-0.870*log10Te + 3.57)
-!        Hbeta = Hbeta*NeUsed*ionDenUsed(elementXref(1),2)*elemAbundanceUsed(1)
-
-        ! calculate emission due to HI recombination lines [e-25 ergs/s/cm^3]
-!        do iup = 15, 3, -1
-!            do ilow = 2, min(8, iup-1)
-!                HIRecLines(iup, ilow) = HIRecLines(iup, ilow)*Hbeta
-!            end do
-!        end do
-
-        ! calculate Hbeta
-!        if (TeUsed > 26000.) then
-!           print*, "! recLineEmission: [warning] temperature exceeds 26000K - Hbeta &
-!                & calculations may be uncertain"
-!        end if
         Hbeta = 2530./(TeUsed**0.833) ! TeUsed < 26000K CASE
-
-        ! fits to Storey and Hummer MNRAS 272(1995)41
-!        Hbeta = 10**(-0.870*log10Te + 3.57)
         Hbeta = Hbeta*NeUsed*ionDenUsed(elementXref(1),2)*elemAbundanceUsed(1)
 
         call hlinex(4,2,TeUsed,NeUsed,fh)
@@ -2081,7 +2044,6 @@ if (HIRecLines(iup, ilow) .gt. huge(1.0)) then
   print *,iup,ilow
   print *,TeUsed,NeUsed
   print *,fh
-!  stop
   HIRecLines(iup, ilow)=0.d0
 endif
              enddo
@@ -2089,15 +2051,12 @@ endif
         endif
 
         ! add contribution of Lyman alpha
-        ! fits to Storey and Hummer MNRAS 272(1995)41
         Lalpha = 10**(-0.897*log10Te + 5.05)
         HIRecLines(30, 8) =HIRecLines(30, 8) + elemAbundanceUsed(1)*&
              & ionDenUsed(elementXref(1),2)*&
              & NeUsed*Lalpha
 
         ! reinitialise HeIIRecLines
-        ! file used to be read in here
-
         HeIIRecLines = HeIIRecLineData
 
         ! calculate HeII 4686 [E-25 ergs*cm^3/s]
@@ -2112,7 +2071,7 @@ endif
         end do
 
         ! now do HeI
-
+        T4 = TeUsed / 10000.
         if (NeUsed <= 100.) then
            denint=0
         elseif (NeUsed > 100. .and. NeUsed <= 1.e4) then
@@ -2123,16 +2082,7 @@ endif
            denint=3
         end if
         
-!        ! Safeguard: Prevent T4 from being too small for the fitting formula
-!        ! this means HeI lines will be wrong in these regions
-!        ! this is a temp fix!!!!!!
-!        if (TeUsed < 5000.) then
-!           T4 = 5000.0 / 10000.
-!        endif
-
-
         if (TeUsed > 5000.) then
-
            ! data from Benjamin, Skillman and Smits ApJ514(1999)307 [e-25 ergs*cm^3/s]
            if (denint>0.and.denint<3) then
               do i = 1, 34
@@ -2149,51 +2099,29 @@ endif
                  HeIRecLines(i) = HeIrecLineCoeff(i,3,1)*(T4**(HeIrecLineCoeff(i,3,2)))*exp(HeIrecLineCoeff(i,3,3)/T4)
               end do
           end if
-          
        else
-       
-       ! conferir extrapolação abaixo para regime de densidade pois está errado!
-       ! Use Power-Law Extrapolation for Te < 5000       
            if (denint>0.and.denint<3) then
-           ! here we assume that coefficients converge to the same slope for any densities
-           ! Kept original if structure here to make this more explicit for now
               do i = 1, 34
-                 ! for T4=(5000/1e4)
                  x1 = HeIrecLineCoeff(i,1,1)*((0.5)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.5))
-                 ! for T4=(6000/1e4)
                  x2 = HeIrecLineCoeff(i,1,1)*((0.6)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.6))
-                 ! estimated slope
                  coeff = (LOG10(x1)-LOG10(x2))/(-0.079181246)
-                 
-                 !final extrapolation
                  HeIRecLines(i) = (x1/(0.5**coeff))*T4**coeff
               end do
           elseif(denint==0) then
               do i = 1, 34                 
-                 ! for T4=(5000/1e4)
                  x1 = HeIrecLineCoeff(i,1,1)*((0.5)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.5))
-                 ! for T4=(6000/1e4)
                  x2 = HeIrecLineCoeff(i,1,1)*((0.6)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.6))
-                 ! estimated slope
                  coeff = (LOG10(x1)-LOG10(x2))/(-0.079181246)
-                 
-                 !final extrapolation
                  HeIRecLines(i) = (x1/(0.5**coeff))*T4**coeff
               end do
           elseif(denint==3) then
               do i = 1, 34
-                 ! for T4=(5000/1e4)
                  x1 = HeIrecLineCoeff(i,3,1)*((0.5)**(HeIrecLineCoeff(i,3,2)))*exp(HeIrecLineCoeff(i,3,3)/(0.5))
-                 ! for T4=(6000/1e4)
                  x2 = HeIrecLineCoeff(i,3,1)*((0.6)**(HeIrecLineCoeff(i,3,2)))*exp(HeIrecLineCoeff(i,3,3)/(0.6))
-                 ! estimated slope
                  coeff = (LOG10(x1)-LOG10(x2))/(-0.079181246)
-                 
-                 !final extrapolation
                  HeIRecLines(i) = (x1/(0.5**coeff))*T4**coeff
               end do
           end if
-       
        endif
 
         HeIRecLines=HeIRecLines*NeUsed*elemAbundanceUsed(2)*ionDenUsed(elementXref(2),2)

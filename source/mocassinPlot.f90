@@ -14,6 +14,7 @@ program MoCaSSiNplot
     use set_input_mod
     use xSec_mod
     use readdata_mod
+    use atom_heavy
 
     implicit none
     include 'mpif.h'
@@ -697,20 +698,11 @@ program MoCaSSiNplot
         real                       :: hb          ! emissivity of H 4->2
         real                       :: fh          ! emissivity of H
 
-
-        T4 = TeUsed / 10000.
-
-        ! do hydrogenic ions first
-
-        ! calculate Hbeta
         if (TeUsed > 26000.) then
            print*, "! recLineEmission: [warning] temperature exceeds 26000K - Hbeta &
                 & calculations may be uncertain"
         end if
         Hbeta = 2530./(TeUsed**0.833) ! TeUsed < 26000K CASE
-
-        ! fits to Storey and Hummer MNRAS 272(1995)41
-!        Hbeta = 10**(-0.870*log10Te + 3.57)
         Hbeta = Hbeta*NeUsed*ionDenUsed(elementXref(1),2)*grid3D(iG)%elemAbun(abFileIndexUsed,1)
 
         call hlinex(4,2,TeUsed,NeUsed,fh)
@@ -720,26 +712,19 @@ program MoCaSSiNplot
            do iup = 30, ilow+1, -1
               call hlinex(iup,ilow,TeUsed,NeUsed,fh)
               HIRecLines(iup, ilow) = (fh/hb)*Hbeta
-
            enddo
         enddo
 
-
-        ! add contribution of Lyman alpha
-        ! fits to Storey and Hummer MNRAS 272(1995)41
         Lalpha = 10**(-0.897*log10TeLoc + 5.05)
-
         HIRecLines(30, 8) =HIRecLines(30, 8) + grid3D(iG)%elemAbun(abFileIndexUsed,1)*&
              & ionDenUsed(elementXref(1),2)*&
              & NeUsed*Lalpha
 
         HeIIRecLines = HeIIRecLineData
 
-        ! calculate HeII 4686 [E-25 ergs*cm^3/s]
         HeII4686 = 10.**(-.997*log10(TeUsed)+5.16)
         HeII4686 = HeII4686*NeUsed*grid3D(iG)%elemAbun(abFileIndexUsed,2)*ionDenUsed(elementXref(2),3)
 
-        ! calculate emission due to HeI recombination lines [e-25 ergs/s/cm^3]
         do iup = 30, 3, -1
             do ilow = 2, min(16, iup-1)
                 HeIIRecLines(iup, ilow) = HeIIRecLines(iup, ilow)*HeII4686
@@ -747,7 +732,7 @@ program MoCaSSiNplot
         end do
 
         ! now do HeI
-
+        T4 = TeUsed / 10000.
         if (NeUsed <= 100.) then
            denint=0
         elseif (NeUsed > 100. .and. NeUsed <= 1.e4) then
@@ -758,16 +743,7 @@ program MoCaSSiNplot
            denint=3
         end if
 
-!        ! Safeguard: Prevent T4 from being too small for the fitting formula
-!        ! this means HeI lines will be wrong in these regions
-!        ! this is a temp fix!!!!!!
-!        if (TeUsed < 5000.) then
-!           T4 = 5000.0 / 10000.
-!        endif
-
-
         if (TeUsed > 5000.) then
-
            ! data from Benjamin, Skillman and Smits ApJ514(1999)307 [e-25 ergs*cm^3/s]
            if (denint>0.and.denint<3) then
               do i = 1, 34
@@ -784,51 +760,29 @@ program MoCaSSiNplot
                  HeIRecLines(i) = HeIrecLineCoeff(i,3,1)*(T4**(HeIrecLineCoeff(i,3,2)))*exp(HeIrecLineCoeff(i,3,3)/T4)
               end do
           end if
-          
        else
-       
-       ! conferir extrapolação abaixo para regime de densidade pois está errado!
-       ! Use Power-Law Extrapolation for Te < 5000       
            if (denint>0.and.denint<3) then
-           ! here we assume that coefficients converge to the same slope for any densities
-           ! Kept original if structure here to make this more explicit for now
               do i = 1, 34
-                 ! for T4=(5000/1e4)
                  x1 = HeIrecLineCoeff(i,1,1)*((0.5)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.5))
-                 ! for T4=(6000/1e4)
                  x2 = HeIrecLineCoeff(i,1,1)*((0.6)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.6))
-                 ! estimated slope
                  coeff = (LOG10(x1)-LOG10(x2))/(-0.079181246)
-                 
-                 !final extrapolation
                  HeIRecLines(i) = (x1/(0.5**coeff))*T4**coeff
               end do
           elseif(denint==0) then
               do i = 1, 34                 
-                 ! for T4=(5000/1e4)
                  x1 = HeIrecLineCoeff(i,1,1)*((0.5)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.5))
-                 ! for T4=(6000/1e4)
                  x2 = HeIrecLineCoeff(i,1,1)*((0.6)**(HeIrecLineCoeff(i,1,2)))*exp(HeIrecLineCoeff(i,1,3)/(0.6))
-                 ! estimated slope
                  coeff = (LOG10(x1)-LOG10(x2))/(-0.079181246)
-                 
-                 !final extrapolation
                  HeIRecLines(i) = (x1/(0.5**coeff))*T4**coeff
               end do
           elseif(denint==3) then
               do i = 1, 34
-                 ! for T4=(5000/1e4)
                  x1 = HeIrecLineCoeff(i,3,1)*((0.5)**(HeIrecLineCoeff(i,3,2)))*exp(HeIrecLineCoeff(i,3,3)/(0.5))
-                 ! for T4=(6000/1e4)
                  x2 = HeIrecLineCoeff(i,3,1)*((0.6)**(HeIrecLineCoeff(i,3,2)))*exp(HeIrecLineCoeff(i,3,3)/(0.6))
-                 ! estimated slope
                  coeff = (LOG10(x1)-LOG10(x2))/(-0.079181246)
-                 
-                 !final extrapolation
                  HeIRecLines(i) = (x1/(0.5**coeff))*T4**coeff
               end do
           end if
-       
        endif
 
         HeIRecLines=HeIRecLines*NeUsed*grid3D(iG)%elemAbun(abFileIndexUsed,2)*ionDenUsed(elementXref(2),2)
