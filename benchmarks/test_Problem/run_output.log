@@ -109,3 +109,34 @@
  ! iterateMC: emissionDriver out           1
  Balmer Jump: [erg/s/A]    2.52870252E+33
  iterateMC: Starting transfer for ionising source            1
+ Star:            1
+ Qphot =    8.53558624E+11
+ Qphot =    8.53558624E+11
+ Lstar   70.0000000
+ ! iterateMC: chunk size =         9261
+ ! iterateMC: Doing chunk            1
+ ! iterateMC: [Interactions] : total -- abs -- sca:
+ ! iterateMC: [Interactions]    9205808.00      --    79.5212173     % --    20.4787769     %
+  total Escaped Packets :          11
+ in writeSED
+ Total energy radiated out of the nebula [e36 erg/s]:   44.8432846       0.00000000       70.0000000                 10000000
+ out writeSED...
+ iterateMC: updateCell in           1
+ iterateMC: updateCell out           1
+ ! iterateMC: [Summary] Iteration            1 ;            0 % converged cells in grid            1
+ ! iterateMC: [Summary] Iteration            1 ;            0 % no hit cells in grid            1
+ ! iterateMC: [Summary] Iteration            1 ;            0 % Ion balance not reached in grid            1
+ ! iterateMC: [Summary] Iteration            1 ;            0 % Te balance not reached in grid           1
+ ! iterateMC: [Summary] Iteration            1 ; Total:    0.143953934     % converged cells over all grids
+ ! iterateMC: [Summary] Iteration            1 ;              10000000  energy packets used
+ in writeGrid
+ out writeGrid
+ ! iterateMC: [Summary] Iteration            1 ; finished at 00:14:17
+ ! iterateMC: ionizationDriver in           1
+ ! iterateMC: ionizationDriver out           1
+ ! iterateMC: adding dust contribution to total opacity            1
+ ! iterateMC: dust contribution to total opacity added            1
+ ! iterateMC: emissionDriver in           1
+ ! iterateMC: emissionDriver out           1
+ Balmer Jump: [erg/s/A]    9.95173560E+33
+ iterateMC: Starting transfer for ionising source            1
