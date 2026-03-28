@@ -978,11 +978,7 @@ module grid_mod
         end if
 
 
-        if (lg2D) then
-           yTop = 1
-        else
            yTop = grid%ny
-        end if
 
 
         grid%active = 1
@@ -1158,7 +1154,6 @@ module grid_mod
 
            end if
 
-           if (lg2D) grid%yAxis = grid%xAxis
 
 
           ! set active cells pointers
@@ -1232,49 +1227,6 @@ module grid_mod
              end do
           end do
 
-
-          allocate(TwoDscaleJtemp(grid%nCells))
-          TwoDscaleJtemp = 1.
-
-
-          if (lg2D) then
-             do i = 1, grid%nx
-                do j = 2, grid%ny
-                   do k = 1, grid%nz
-                      radius = 1.e10*sqrt( (grid%xAxis(i)/1.e10)*&
-                           &(grid%xAxis(i)/1.e10) + &
-                           &(grid%yAxis(j)/1.e10)*(grid%yAxis(j)/1.e10) )
-
-                      call locate(grid%xAxis, radius, xPmap)
-                      if (xPmap < grid%nx) then
-                         if (radius >= (grid%xAxis(xPmap)+grid%xAxis(xPmap+1))/2.) &
-                              & xPmap = xPmap+1
-                      end if
-                      grid%active(i,j,k) = grid%active(xPmap, 1, k)
-
-                      if (grid%active(xPmap,1,k)>0) &
-                           & TwoDScaleJtemp(grid%active(xPmap,1,k)) = &
-                           & TwoDScaleJtemp(grid%active(xPmap,1,k))+1.
-
-                   end do
-                end do
-             end do
-
-             grid%nCells = 0
-             do i = 1,  grid%nx
-                do k = 1,  grid%nz
-                   if (grid%active(i,1,k) > 0) grid%nCells = grid%nCells +1
-
-                end do
-             end do
-
-             allocate(TwoDscaleJ(grid%nCells))
-             do i = 1, grid%nCells
-                TwoDscaleJ(i) = TwoDscaleJtemp(i)
-             end do
-             deallocate(TwoDscaleJtemp)
-
-          end if
 
 
 
@@ -2686,11 +2638,7 @@ if (allocated(ionDenUsed)) deallocate (ionDenUsed)
                  write(21,*) grid(iG)%zAxis(i)
               end do
 
-              if (iG>1 .or. (.not. lg2D)) then
                  yTop = grid(iG)%ny
-              else if (iG == 1 .and. lg2D) then
-                 yTop = 1
-              end if
 
 
               ! write the rest of the grid to files
@@ -2842,7 +2790,6 @@ if (allocated(ionDenUsed)) deallocate (ionDenUsed)
         write(40, *) emittingGrid, ' emittingGrid'
         write(40, *) nstages, ' emittingGrid'
         write(40, *) lgMultistars, ' lgMultiStars'
-        write(40,*)  lg2D, ' 2D geometry?'
         write(40,*) lgEcho, echot1, echot2, echoTemp," Echo on/off"
         write(40,*) lgNosource," NoSourceSED"
         ! close file
@@ -3071,7 +3018,6 @@ end function getVolume
       read(77, *) emittingGrid
       read(77, *) nstages
       read(77, *) lgMultistars
-      read(77, *) lg2D
       read(77, *) lgEcho, echot1, echot2, echoTemp
       read(77,*) lgNosource
 
@@ -3119,7 +3065,6 @@ end function getVolume
          print*,  emittingGrid, ' emittingGrid'
          print*,  nstages, ' nstages'
          print*,  lgMultistars, ' lgMultiStars'
-         print*,  lg2D, ' lg2D'
          print*,  lgEcho, echot1, echot2, echoTemp
          print*,  lgNosource," NoSourceSED"
       end if
@@ -3383,11 +3328,7 @@ end function getVolume
             read(89, *) grid(iG)%zAxis(i)
          end do
 
-         if (lg2D) then
-            yTop = 1
-         else
             yTop = grid(iG)%ny
-         end if
 
          ! read the rest of the files into grid
          do i = 1, grid(iG)%nx
@@ -3447,32 +3388,6 @@ end function getVolume
 
 
 
-         if (lg2D .and. iG==1) then
-            allocate(TwoDscaleJ(grid(iG)%nCells))
-            TwoDscaleJ = 1.
-
-            do i = 1, grid(ig)%nx
-               do j = 2, grid(ig)%ny
-                  do k = 1, grid(ig)%nz
-                     radius = 1.e10*sqrt( (grid(ig)%xAxis(i)/1.e10)*&
-                          &(grid(ig)%xAxis(i)/1.e10) + &
-                          &(grid(ig)%yAxis(j)/1.e10)*(grid(ig)%yAxis(j)/1.e10) )
-
-                     call locate(grid(ig)%xAxis, radius, xPmap)
-                     if (xPmap < grid(ig)%nx) then
-                        if (radius >= (grid(ig)%xAxis(xPmap)+grid(ig)%xAxis(xPmap+1))/2.) &
-                             & xPmap = xPmap+1
-                     end if
-                     grid(ig)%active(i,j,k) = grid(ig)%active(xPmap, 1, k)
-
-                     if (grid(ig)%active(xPmap,1,k)>0) &
-                          & TwoDScaleJ(grid(ig)%active(xPmap,1,k)) = &
-                          & TwoDScaleJ(grid(ig)%active(xPmap,1,k))+1.
-
-                   end do
-                end do
-             end do
-          end if
 
 
 

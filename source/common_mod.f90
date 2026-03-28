@@ -20,7 +20,6 @@ module common_mod
     integer, allocatable :: lgConvergedTemp(:)  ! temporary converged? flag
     integer, allocatable :: lgBlackTemp(:)      ! temporary converged? flag
 
-    logical         :: lg2D=.false.             ! 2D?
     logical         :: lgIsotropic
 
     logical             :: lgMultiStars=.false.
