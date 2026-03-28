@@ -574,11 +574,6 @@ module continuum_mod
 &                                      dy, &             ! in [cm]
 &                                      dz                !
 
-        if (lg1D) then
-           if (nGrids>1) then
-              print*, '! getVolumeCon: 1D option and multiple grids options are not compatible'
-              stop
-           end if
 
            if (xP == 1) then
 

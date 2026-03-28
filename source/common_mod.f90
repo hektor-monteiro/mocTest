@@ -20,7 +20,6 @@ module common_mod
     integer, allocatable :: lgConvergedTemp(:)  ! temporary converged? flag
     integer, allocatable :: lgBlackTemp(:)      ! temporary converged? flag
 
-    logical         :: lg2D=.false.             ! 2D?
     logical         :: lgIsotropic
 
     logical             :: lgMultiStars=.false.
@@ -375,7 +374,6 @@ module common_mod
     logical            :: lgMdMg           ! dust to gas mass ratio used>?
     logical            :: lgMdMh           ! dust to hydrogen mass ratio used>?
     logical            :: lgOutput         ! output line fluxes,temp & ion struct files?
-    logical            :: lg1D             ! 1-D switch
     logical            :: lgMultiDustChemistry ! do we have a inhomogeneous dust species distribution?
     logical            :: lgMultiChemistry ! do we have a chemically inhomogeneous gas?
     logical            :: lgNeutral        ! starting from neutral gas?

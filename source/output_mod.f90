@@ -288,9 +288,6 @@ module output_mod
         ! sum over all cells
         do iG = 1, nGrids
 
-           if (lg2D) then
-              yPloc = 1
-           else
               yPloc = grid(iG)%ny
            end if
 
@@ -301,11 +298,6 @@ module output_mod
 
 !print*, i, j,k
                     ! temporary arrangement
-                    if (lg1D ) then
-                       if (grid(iG)%ionDen(grid(iG)%active(i,j,k),elementXref(1),1) > 0.95) then
-                          print*, 'R_out = ', grid(iG)%xAxis(i-1), ' (',i-1,')'
-                          exit outer
-                       end if
                     end if
 
                     ! slit condition
@@ -426,16 +418,6 @@ module output_mod
 !                       dV = getVolume(grid(iG), i,j,k)
 
 
-                       if (lg2D .and. lgSymmetricXYZ) then
-                          radius = sqrt((grid(iG)%xAxis(i)/1.e15)*&
-                               &(grid(iG)%xAxis(i)/1.e15) + (grid(iG)%yAxis(j)/1.e15)*&
-                               &(grid(iG)%yAxis(j)/1.e15))
-                          if (i == 1) then
-                             dr = (grid(iG)%xAxis(2)-grid(iG)%xAxis(1))/2.
-                          elseif (i == grid(iG)%nx) then
-                             dr = (grid(iG)%xAxis(grid(iG)%nx)-&
-                                  &grid(iG)%xAxis(grid(ig)%nx-1))
-                          else
                              dr = (grid(iG)%xAxis(i+1)-grid(iG)%xAxis(i-1))/2.
                           end if
                           dr = dr/1.e15
@@ -450,12 +432,6 @@ module output_mod
                           dz = dz/1.e15
                           dV = 2.*Pi*radius*dr*dz
 !                          dV = getVolume(grid(iG), i,j,k)*scale2d
-                       else if (lg2D .and. .not.lgSymmetricXYZ) then
-                          print*, "! outputGas: a 2d grid must be symmetric"
-                          stop
-                       else if (.not. lg2D) then
-                          dV = getVolume(grid(iG), i,j,k)
-                       end if
 
 
 
@@ -911,11 +887,6 @@ endif
 !           end if
 
            ! correct for symmetry case
-           if (lgSymmetricXYZ .and. .not.lg2D) then
-              HbetaVol(iAb)        = 8.*HbetaVol(iAb)
-           elseif (lgSymmetricXYZ .and. lg2D) then
-              HbetaVol(iAb)        = 2.*HbetaVol(iAb)
-           end if
 
            ! calculate Hbeta in units of [E36 erg/sec]
            if (lgDebug) HbetaLuminosity(iAb) = HbetaLuminosity(iAb)

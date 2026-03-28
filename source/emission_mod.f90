@@ -1767,7 +1767,6 @@ module emission_mod
                         dSx = grids(gP)%xAxis(grids(gP)%nx)
                      end if
 
-                     if (.not.lg1D) then
                         if (uHat%y>0.) then
                            if (yP<grids(gP)%ny) then
                               dSy = ( (grids(gP)%yAxis(yP+1)+grids(gP)%yAxis(yP))/2.-rVec%y)/uHat%y
@@ -1965,7 +1964,6 @@ module emission_mod
                      end if
 
                      ! and update current grid indeces
-                     if (.not.lg1D) then
                         if ( (dS == dSx) .and. (uHat%x > 0.)  ) then
                            xP = xP+1
                         else if ( (dS == dSx) .and. (uHat%x < 0.) ) then

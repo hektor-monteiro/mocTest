@@ -426,15 +426,6 @@ module fluorescence_mod
              dSy = 0.
              dSz = 0.
 
-             if (lg1D) then
-                radius = 1.e10*sqrt((rVec%x/1.e10)*(rVec%x/1.e10) + &
-                     &                               (rVec%y/1.e10)*(rVec%y/1.e10) + &
-                     &                               (rVec%z/1.e10)*(rVec%z/1.e10))
-                call locate(grid(1)%xAxis, radius, xP)
-                if (nGrids > 1 .or. gP >1) then
-                   print*, " ! fluorescencePacketRun: multiple grids are not allowed in a 1D simulation"
-                   stop
-                end if
              end if
 
              ! initialize optical depth
@@ -568,7 +559,6 @@ module fluorescence_mod
                       dSx = grid(gP)%xAxis(grid(gP)%nx)
                    end if
 
-                   if (.not.lg1D) then
                       if (vHat%y>0.) then
                          if (yP<grid(gP)%ny) then
                             dSy = ( (grid(gP)%yAxis(yP+1)+grid(gP)%yAxis(yP))/2.-rVec%y)*invVy
@@ -687,11 +677,6 @@ module fluorescence_mod
                 ! calculate the optical depth to the next cell wall
                 tauCell = dS*grid(gP)%opacity(grid(gP)%active(xP,yP,zP), enPacket%nuP)
 
-                if (lg1D) then
-                   if (nGrids>1) then
-                      print*, '! getVolumeLoc: 1D option and multiple grids options are not compatible'
-                      stop
-                   end if
 
                    if (xP == 1) then
 
@@ -1066,7 +1051,6 @@ module fluorescence_mod
                       end if
                    end if
 
-                   if (.not.lg1D) then
                       if ( (dS == dSx) .and. (vHat%x > 0.)  ) then
                          xP = xP+1
                       else if ( (dS == dSx) .and. (vHat%x < 0.) ) then

@@ -48,7 +48,6 @@ module set_input_mod
         lgNeutral     = .true.
         lgOutput      = .false.
         lgPlaneIonization = .false.
-        lg1D          = .false.
         lgDustScattering = .true.
         lgSymmetricXYZ= .false.
         lgEcho        = .false.
@@ -165,8 +164,7 @@ module set_input_mod
                lgIsotropic = .true.
                !print*, keyword, lgIsotropic
             case("2D")
-               lg2D = .true.
-               !print*, keyword, lg2D
+               !print*, keyword
             case("nstages")
                backspace 10
                read(unit=10, fmt=*, iostat=ios) keyword, nstages
@@ -291,7 +289,6 @@ module set_input_mod
             case ("oneD")
                backspace 10
                 read(unit=10, fmt=*, iostat=ios) keyword
-                lg1D = .true.
                 !print*, keyword
                 print*, 'ERROR: oneD option is not currently avalable!!!!'
                 stop
@@ -681,63 +678,6 @@ module set_input_mod
         print*, "mother nx, ny, nz" , nxin(1), nyin(1), nzin(1)
 
         ! check for missing or invalid values in the model parameters input file
-        if (lg1D) then
-           nyIn = 1
-           nzIn = 1
-           lgSymmetricXYZ = .true.
-        else if (lgPlaneIonization .and. lg2d) then
-           print*, "! readInput: planeIonization and 2D options are not compatible"
-           stop
-        else if (resLinesTransfer >= minConvergence .and. resLinesTransfer /= 101. .and. lgDust) then
-           print*, "! readInput: the min convergence level assigned to the calculation of &
-                &the resonant lines transfer is higher or equal to that assigned by maxIterateMC"
-           stop
-        else if (resLinesTransfer >= 100.5 .and. lgDust .and. lgGas) then
-           print*, "! readInput: [warning] both dust and gas processes have been activated, but the &
-                &resonanceLinesTransfer keyword is absent. The dust temperatures may be underestimated!!!!"
-        else if (resLinesTransfer <= 100 .and. (.not.lgDust .or. .not.lgGas)) then
-           print*, "! readInput: [warning] both dust and gas processes must be activated, to use the&
-                &resonanceLinesTransfer keyword. Reset to 101."
-           resLinesTransfer = 101.
-        else if (.not.allocated(abundanceFile) .and. lgGas) then
-           print*, "! readInput: no elemental abundance file has been specified"
-           stop
-        else if ((lgMdMh .and. lgMdMg) .and. (NdustFile /= "none" .or. NdustValue /=0) )then
-           print*, "! readInput: MdMg and Ndust cannot be specified together"
-           stop
-        else if ( (.not.lgDust) .and. (.not.lgGas) )then
-           print*, "! readInput: the grid is completely empty. no gas or dust present.",  &
-                lgGas,lgDust
-           stop
-        else if ( lgDebug .and. .not.(lgGas) ) then
-           print*, "! readInput: debugging mode can only be used when a gas component is present. &
-                & debugging mode will be turned off."
-           lgDebug = .false.
-        else if (fillingFactor > 1.) then
-           print*, "! readInput: filling factor, epsilon, specified is greater than unity.", &
-                & fillingFactor
-           stop
-        else if ((.not.lgDfile) .and. (Rnx<0. .or. Rny<0. .or. Rnz<0.) .and. (NdustFile == "none")) then
-           print*,  "! readInput: Grid edges unspecified or non-valid grid &
-                &edges", Rnx,Rny,Rnz
-           stop
-        else if (lgDfile .and. (Rnx>=0. .or. Rny>=0. .or. Rnz>=0.) ) then
-           print*,  "! readInput: [warning] when the density distribution is&
-                & specified via an external density file, no grid edges need &
-                & to be specified. The specified values will be ignored."
-        else if (lgPlaneIonization .and. .not.lgDfile) then
-           print*, "! readInput: plane ionizing field specified - must use user defined &
-                &density distribution via the densityFile option"
-           stop
-        else if (lgPlaneIonization .and. lgSymmetricXYZ) then
-           print*, "! readInput [warning]: plane ionizing field specified - cannot use&
-                & symmetricXYZ - removed."
-           lgSymmetricXYZ = .false.
-        else if (TStellar(1) == 0. .and. Tdiffuse==0. .and. size(contShape).ge.1) then
-            if (contShape(1) /= 'powerlaw') then
-              print*, "! readInput: TStellar missing from model parameter input file"
-              stop
-            endif
         else if (R_in < 0.) then
             print*, "! readInput: Invalid Rin parameter in the input file", R_in
             stop

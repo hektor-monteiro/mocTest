@@ -515,8 +515,6 @@ module grid_mod
 
         print*, "in fillGrid"
 
-        if (lg1D) lgSymmetricXYZ = .false.
-
         if (lgPlaneIonization) then
            allocate(planeIonDistribution(grid(1)%nx,grid(1)%nz), stat = err)
            if (err /= 0) then
@@ -546,16 +544,6 @@ module grid_mod
                  grid(1)%zAxis(i) = real(i-1)/real(grid(1)%nz-1)
                  grid(1)%zAxis(i) = grid(1)%zAxis(i) * Rnz
               end do
-
-           else if (lg1D) then
-
-              do i = 1, grid(1)%nx
-                 grid(1)%xAxis(i) = real(i-1)/real(grid(1)%nx-1)
-                 grid(1)%xAxis(i) = grid(1)%xAxis(i) * Rnx
-              end do
-
-              grid(1)%yAxis = 0.
-              grid(1)%zAxis = 0.
 
            else ! not lgSymmetricXYZ
 
@@ -598,8 +586,6 @@ module grid_mod
            end if
 
         end if
-
-        if (lg1D) lgSymmetricXYZ = .true.
 
 
 
@@ -818,13 +804,8 @@ module grid_mod
         do iG = 1, nGrids
            ! find geometric corrections
            grid(iG)%geoCorrX = (grid(iG)%xAxis(grid(iG)%nx) - grid(iG)%xAxis(grid(iG)%nx-1))/2.
-           if (.not. lg1D) then
-              grid(iG)%geoCorrY = (grid(iG)%yAxis(grid(iG)%ny) - grid(iG)%yAxis(grid(iG)%ny-1))/2.
-              grid(iG)%geoCorrZ = (grid(iG)%zAxis(grid(iG)%nz) - grid(iG)%zAxis(grid(iG)%nz-1))/2.
-           else
-              grid(iG)%geoCorrY = 0.
-              grid(iG)%geoCorrZ = 0.
-           end if
+           grid(iG)%geoCorrY = (grid(iG)%yAxis(grid(iG)%ny) - grid(iG)%yAxis(grid(iG)%ny-1))/2.
+           grid(iG)%geoCorrZ = (grid(iG)%zAxis(grid(iG)%nz) - grid(iG)%zAxis(grid(iG)%nz-1))/2.
 
            if (taskid==0) print*, "Geometric grid corrections for grid ", &
                 & iG, ' : ', grid(iG)%geoCorrX, grid(iG)%geoCorrY, grid(iG)%geoCorrZ
@@ -978,9 +959,6 @@ module grid_mod
         end if
 
 
-        if (lg2D) then
-           yTop = 1
-        else
            yTop = grid%ny
         end if
 
@@ -995,13 +973,9 @@ module grid_mod
                     if (lgDlaw) then
 
                        ! calculate radius
-                       if (lg1D) then
-                          radius = grid%xAxis(i)
-                       else
-                          radius = 1.e10*sqrt( (grid%xAxis(i)/1.e10)*(grid%xAxis(i)/1.e10) + &
-                                 &                                        (grid%yAxis(j)/1.e10)*(grid%yAxis(j)/1.e10) + &
-                                 &                                        (grid%zAxis(k)/1.e10)*(grid%zAxis(k)/1.e10) )
-                       end if
+                       radius = 1.e10*sqrt( (grid%xAxis(i)/1.e10)*(grid%xAxis(i)/1.e10) + &
+                              &                                        (grid%yAxis(j)/1.e10)*(grid%yAxis(j)/1.e10) + &
+                              &                                        (grid%zAxis(k)/1.e10)*(grid%zAxis(k)/1.e10) )
 
                          ! edit the following to use a different density law
 
@@ -1168,13 +1142,9 @@ module grid_mod
                 do k = 1, grid%nz
 
                    ! calculate radius
-                   if (lg1D) then
-                      radius = grid%xAxis(i)
-                   else
-                      radius = 1.e10*sqrt( (grid%xAxis(i)/1.e10)*(grid%xAxis(i)/1.e10) + &
+                   radius = 1.e10*sqrt( (grid%xAxis(i)/1.e10)*(grid%xAxis(i)/1.e10) + &
 &                                        (grid%yAxis(j)/1.e10)*(grid%yAxis(j)/1.e10) + &
 &                                        (grid%zAxis(k)/1.e10)*(grid%zAxis(k)/1.e10) )
-                   end if
 
 
                    ! check if this grid point is  valid nebular point
@@ -1237,19 +1207,6 @@ module grid_mod
           TwoDscaleJtemp = 1.
 
 
-          if (lg2D) then
-             do i = 1, grid%nx
-                do j = 2, grid%ny
-                   do k = 1, grid%nz
-                      radius = 1.e10*sqrt( (grid%xAxis(i)/1.e10)*&
-                           &(grid%xAxis(i)/1.e10) + &
-                           &(grid%yAxis(j)/1.e10)*(grid%yAxis(j)/1.e10) )
-
-                      call locate(grid%xAxis, radius, xPmap)
-                      if (xPmap < grid%nx) then
-                         if (radius >= (grid%xAxis(xPmap)+grid%xAxis(xPmap+1))/2.) &
-                              & xPmap = xPmap+1
-                      end if
                       grid%active(i,j,k) = grid%active(xPmap, 1, k)
 
                       if (grid%active(xPmap,1,k)>0) &
@@ -2045,11 +2002,6 @@ module grid_mod
                  do iy = 1, grid(iG)%ny
                     do iz = 1, grid(iG)%nz
 
-                       if (lg1D) then
-                          print*, "! setSubGrids: No 1D option with multiple grids!!"
-                          stop
-                       end if
-
                        if (.not.lgMultiChemistry) then
 
                           if (lgMultiDustChemistry) then
@@ -2688,9 +2640,6 @@ if (allocated(ionDenUsed)) deallocate (ionDenUsed)
 
               if (iG>1 .or. (.not. lg2D)) then
                  yTop = grid(iG)%ny
-              else if (iG == 1 .and. lg2D) then
-                 yTop = 1
-              end if
 
 
               ! write the rest of the grid to files
@@ -2790,7 +2739,7 @@ if (allocated(ionDenUsed)) deallocate (ionDenUsed)
         write(40, *) lgAutoPackets, convIncPercent, nPhotIncrease, maxPhotons, ' lgAutoPackets'
         write(40, *) lgSymmetricXYZ, ' lgSymmetricXYZ'
         write(40, *) lgTalk, ' lgTalk'
-        write(40, *) lg1D, ' lg1D'
+        write(40, *)  ''
         write(40, *) nbins, ' nbins'
         write(40, *) nuStepSize, ' nuStepSize'
         write(40, *) nuMax,' nuMax'
@@ -2842,7 +2791,7 @@ if (allocated(ionDenUsed)) deallocate (ionDenUsed)
         write(40, *) emittingGrid, ' emittingGrid'
         write(40, *) nstages, ' emittingGrid'
         write(40, *) lgMultistars, ' lgMultiStars'
-        write(40,*)  lg2D, ' 2D geometry?'
+        write(40,*)   ' 2D geometry?'
         write(40,*) lgEcho, echot1, echot2, echoTemp," Echo on/off"
         write(40,*) lgNosource," NoSourceSED"
         ! close file
@@ -2864,11 +2813,6 @@ function getVolume(grid, xP, yP, zP)
   real :: dx, dy, dz         ! cartesian axes increments in [cm]
   real :: factor
 
-  if (lg1D) then
-    if (nGrids > 1) then
-      print*, '! getVolume: 1D option and multiple grids options are not compatible'
-      stop
-    end if
 
     if (xP == 1) then
       getVolume = 4.*Pi* ((grid%xAxis(xP+1)/1.e15)**3)/3.
@@ -3082,7 +3026,7 @@ end function getVolume
               & ' lgAutoPackets, convIncPercent, nPhotIncrease, maxPhotons'
          print*,  lgSymmetricXYZ, ' lgSymmetricXYZ'
          print*,  lgTalk, ' lgTalk'
-         print*,  lg1D, ' lg1D'
+         print*, ''
          print*,  nbins, ' nbins'
          print*,  nuStepSize, ' nuStepSize.'
          print*,  nuMax, ' nuMax'
@@ -3119,7 +3063,7 @@ end function getVolume
          print*,  emittingGrid, ' emittingGrid'
          print*,  nstages, ' nstages'
          print*,  lgMultistars, ' lgMultiStars'
-         print*,  lg2D, ' lg2D'
+         print*, ''
          print*,  lgEcho, echot1, echot2, echoTemp
          print*,  lgNosource," NoSourceSED"
       end if
@@ -3383,9 +3327,6 @@ end function getVolume
             read(89, *) grid(iG)%zAxis(i)
          end do
 
-         if (lg2D) then
-            yTop = 1
-         else
             yTop = grid(iG)%ny
          end if
 
@@ -3447,22 +3388,6 @@ end function getVolume
 
 
 
-         if (lg2D .and. iG==1) then
-            allocate(TwoDscaleJ(grid(iG)%nCells))
-            TwoDscaleJ = 1.
-
-            do i = 1, grid(ig)%nx
-               do j = 2, grid(ig)%ny
-                  do k = 1, grid(ig)%nz
-                     radius = 1.e10*sqrt( (grid(ig)%xAxis(i)/1.e10)*&
-                          &(grid(ig)%xAxis(i)/1.e10) + &
-                          &(grid(ig)%yAxis(j)/1.e10)*(grid(ig)%yAxis(j)/1.e10) )
-
-                     call locate(grid(ig)%xAxis, radius, xPmap)
-                     if (xPmap < grid(ig)%nx) then
-                        if (radius >= (grid(ig)%xAxis(xPmap)+grid(ig)%xAxis(xPmap+1))/2.) &
-                             & xPmap = xPmap+1
-                     end if
                      grid(ig)%active(i,j,k) = grid(ig)%active(xPmap, 1, k)
 
                      if (grid(ig)%active(xPmap,1,k)>0) &
@@ -3479,7 +3404,6 @@ end function getVolume
 
          ! find geometric corrections
          grid(iG)%geoCorrX = (grid(iG)%xAxis(grid(iG)%nx) - grid(iG)%xAxis(grid(iG)%nx-1))/2.
-         if (.not. lg1D) then
             grid(iG)%geoCorrY = (grid(iG)%yAxis(grid(iG)%ny) - grid(iG)%yAxis(grid(iG)%ny-1))/2.
             grid(iG)%geoCorrZ = (grid(iG)%zAxis(grid(iG)%nz) - grid(iG)%zAxis(grid(iG)%nz-1))/2.
          else
