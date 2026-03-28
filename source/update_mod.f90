@@ -9,6 +9,7 @@ module update_mod
     use grid_mod
     use interpolation_mod
     use xSec_mod
+    use atom_heavy
 
     contains
 

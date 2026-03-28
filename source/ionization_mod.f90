@@ -5,6 +5,9 @@ module ionization_mod
     use common_mod             ! common variables
     use constants_mod          ! physical constants
     use xSec_mod               ! x sections module
+    use atom_H
+    use atom_He
+    use atom_heavy
 
     ! common variables
     real, allocatable :: contBoltz(:)       ! Boltzman factors for the continuum array
@@ -402,7 +405,7 @@ module ionization_mod
         end do
 
        ! hydrogen lyman continuum photoelectric opacity
-       call inOpacity(HlevXSecP(1), HlevNuP(1), nbins, density(1,1), 0.)
+       call atom_H_inOpacity(HlevXSecP(1), HlevNuP(1), nbins, density(1,1), 0., contBoltz, opacity)
 
        ! NOTE: the opacity due to the excited levels of HI, HeI and HeII is
        ! neglected for now as it requires calculations of the densities of
@@ -410,85 +413,14 @@ module ionization_mod
        ! of the lower level [cm^-3]
 
        ! helium singlets HeI (ground special because it extends to the high energy limit)
-       call inOpacity(HeISingXSecP(1), HeIlevNuP(1), nbins, density(2, 1), 0.)
+       call atom_He_inOpacity(HeISingXSecP(1), HeIlevNuP(1), nbins, density(2, 1), 0., contBoltz, opacity)
 
        ! ionized helium HeII (ground special because it extends to the high energy limit)
-       call inOpacity(HeIIXSecP(1), HeIIlevNuP(1), nbins, density(2, 2), 0.)
+       call atom_He_inOpacity(HeIIXSecP(1), HeIIlevNuP(1), nbins, density(2, 2), 0., contBoltz, opacity)
 
        do i = 3, nElements
-          if ( lgElementOn(i) ) call putOpacity(i)
+          if ( lgElementOn(i) ) call atom_heavy_putOpacity(i, density, contBoltz, opacity)
        end do
-
-       contains
-
-         ! this subroutine enters the total phoo cross section
-         ! for all subshells into opacity array. it drives inOpacity
-         ! to put in total opacities
-         subroutine putOpacity(nElem)
-             implicit none
-
-             integer, intent(in)               :: nElem
-
-             ! local variables
-             integer :: nIon                  ! counter
-             integer :: nuLowP, nuHighP       ! pointers to lower and highert limit of energy range
-             integer :: nShell                ! counter
-             integer :: xSecP                 ! pointer to x scetion in xSecArray
-
-
-             do nIon = 1, min(nElem, nstages)
-                 if ( density(nElem, nIon) > 0. ) then
-
-                     ! number of bound electrons
-                     do nShell = 1, nShells(nElem, nIon)
-                         nuLowP = elementP(nElem, nIon, nShell, 1)
-                         nuHighP = elementP(nElem, nIon, nShell, 2)
-                         xSecP = elementP(nElem, nIon, nShell, 3)
-                         call inOpacity(xSecP, nuLowP, nuHighP, density(nElem, nIon), 0.)
-                     end do
-
-                 end if
-             end do
-          end subroutine putOpacity
-
-         ! this subroutine adds the opacity of individual species,
-         ! it can include stimulated emission. the departure coefficient b
-         ! can be set to zero.
-         subroutine inOpacity(xSecP, nuLowP, nuHighP, den, b)
-             implicit none
-
-             integer, intent(in)               :: nuLowP, nuHighP  ! pointers to lower and higher limits in nuArray
-             integer, intent(in)               :: xSecP            ! x section pointer
-
-             real, intent(in)                  :: b                ! departure coefficient
-             real, intent(in)                  :: den              ! density of the lower level [cm^-3]
-
-             ! local variables
-             integer             :: i                              ! counter
-             integer             :: iup                            ! upper limit
-             integer             :: k                              ! offset
-
-             real                :: bInv                           ! 1./b
-
-             k = xSecP - nuLowP
-             iup = min(nuHighP, nbins)
-             iup = max(nuLowP, iup)
-             if (b > 1e-35) then
-                 bInv = 1./b
-                 do i = nuLowP, iup
-                     opacity(i) = opacity(i) + xSecArray(i+k)*den*&
-&                                  max(0., 1.-contBoltz(i)*bInv)
-                 end do
-             else
-                 do i = nuLowP, iup
-
-                     opacity(i) = opacity(i) + xSecArray(i+k)*den
-
-                end do
-             end if
-
-
-        end subroutine inOpacity
 
     end subroutine addOpacity
 
