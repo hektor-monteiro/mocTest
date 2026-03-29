@@ -574,28 +574,6 @@ module continuum_mod
 &                                      dy, &             ! in [cm]
 &                                      dz                !
 
-
-           if (xP == 1) then
-
-              getVolumeCon = 4.*Pi* ( (grid%xAxis(xP+1)/1.e15)**3)/3.
-
-
-           else if ( xP==grid%nx) then
-
-              getVolumeCon = Pi* ( (3.*(grid%xAxis(xP)/1.e15)-(grid%xAxis(xP-1)/1.e15))**3 - &
-                   & ((grid%xAxis(xP)/1.e15)+(grid%xAxis(xP-1)/1.e15))**3 ) / 6.
-
-           else
-
-              getVolumeCon = Pi* ( ((grid%xAxis(xP+1)/1.e15)+(grid%xAxis(xP)/1.e15))**3 - &
-                   & ((grid%xAxis(xP-1)/1.e15)+(grid%xAxis(xP)/1.e15))**3 ) / 6.
-
-           end if
-
-           getVolumeCon = getVolumeCon/8.
-
-        else
-
            if ( (xP>1) .and. (xP<grid%nx) ) then
               dx = abs(grid%xAxis(xP+1)-grid%xAxis(xP-1))/2.
            else if ( xP==1 ) then
@@ -639,9 +617,6 @@ module continuum_mod
 
           ! calculate the volume
           getVolumeCon = dx*dy*dz
-
-
-       end if
 
     end function getVolumeCon
 

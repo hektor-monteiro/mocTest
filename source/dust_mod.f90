@@ -73,8 +73,7 @@ module dust_mod
       absOpacTmp = 0.
       scaOpacTmp = 0.
 
-         yTop = grid%ny
-      end if
+      yTop = grid%ny
 
 
       do iP = taskid+1, grid%nx, numtasks

@@ -1342,7 +1342,6 @@ module photon_mod
           dSy = 0.
           dSz = 0.
 
-          end if
 
           ! initialize optical depth
           absTau = 0.
@@ -1567,7 +1566,6 @@ module photon_mod
                       stop
                    end if
 
-                end if
 
                 if (grid(gP)%active(xP,yP,zP)>=0) exit
 
@@ -2096,13 +2094,6 @@ module photon_mod
                       print*, '! pathSegment: insanity occurred in dS assignement &
                            & [dS,dSx,dSy,dSz,vHat]', dS,dSx,dSy,dSz,vHat
                    end if
-                else
-                   radius = 1.e10*sqrt((rVec%x/1.e10)*(rVec%x/1.e10) + &
-                        & (rVec%y/1.e10)*(rVec%y/1.e10) + &
-                        & (rVec%z/1.e10)*(rVec%z/1.e10))
-                   call locate(grid(gP)%xAxis, radius , xP)
-
-                end if
 
                 ! be 6/6/06
                 if(.not.lgPlaneIonization.and..not.lgSymmetricXYZ) then
