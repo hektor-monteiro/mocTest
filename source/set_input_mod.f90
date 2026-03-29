@@ -48,7 +48,7 @@ module set_input_mod
         lgNeutral     = .true.
         lgOutput      = .false.
         lgPlaneIonization = .false.
-        lg1D          = .false.
+        !!lg1D = .false.
         lgDustScattering = .true.
         lgSymmetricXYZ= .false.
         lgEcho        = .false.
@@ -165,7 +165,7 @@ module set_input_mod
                lgIsotropic = .true.
                !print*, keyword, lgIsotropic
             case("2D")
-               lg2D = .true.
+               !!lg2D = .true.
                !print*, keyword, lg2D
             case("nstages")
                backspace 10
@@ -291,7 +291,7 @@ module set_input_mod
             case ("oneD")
                backspace 10
                 read(unit=10, fmt=*, iostat=ios) keyword
-                lg1D = .true.
+                !!lg1D = .true.
                 !print*, keyword
                 print*, 'ERROR: oneD option is not currently avalable!!!!'
                 stop
@@ -681,14 +681,7 @@ module set_input_mod
         print*, "mother nx, ny, nz" , nxin(1), nyin(1), nzin(1)
 
         ! check for missing or invalid values in the model parameters input file
-        if (lg1D) then
-           nyIn = 1
-           nzIn = 1
-           lgSymmetricXYZ = .true.
-        else if (lgPlaneIonization .and. lg2d) then
-           print*, "! readInput: planeIonization and 2D options are not compatible"
-           stop
-        else if (resLinesTransfer >= minConvergence .and. resLinesTransfer /= 101. .and. lgDust) then
+        if (resLinesTransfer >= minConvergence .and. resLinesTransfer /= 101. .and. lgDust) then
            print*, "! readInput: the min convergence level assigned to the calculation of &
                 &the resonant lines transfer is higher or equal to that assigned by maxIterateMC"
            stop

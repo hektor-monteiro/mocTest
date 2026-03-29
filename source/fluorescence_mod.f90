@@ -426,17 +426,6 @@ module fluorescence_mod
              dSy = 0.
              dSz = 0.
 
-             if (lg1D) then
-                radius = 1.e10*sqrt((rVec%x/1.e10)*(rVec%x/1.e10) + &
-                     &                               (rVec%y/1.e10)*(rVec%y/1.e10) + &
-                     &                               (rVec%z/1.e10)*(rVec%z/1.e10))
-                call locate(grid(1)%xAxis, radius, xP)
-                if (nGrids > 1 .or. gP >1) then
-                   print*, " ! fluorescencePacketRun: multiple grids are not allowed in a 1D simulation"
-                   stop
-                end if
-             end if
-
              ! initialize optical depth
              absTau = 0.
 
@@ -568,7 +557,7 @@ module fluorescence_mod
                       dSx = grid(gP)%xAxis(grid(gP)%nx)
                    end if
 
-                   if (.not.lg1D) then
+
                       if (vHat%y>0.) then
                          if (yP<grid(gP)%ny) then
                             dSy = ( (grid(gP)%yAxis(yP+1)+grid(gP)%yAxis(yP))/2.-rVec%y)*invVy
@@ -639,8 +628,6 @@ module fluorescence_mod
                          stop
                       end if
 
-                   end if
-
                    if (grid(gP)%active(xP,yP,zP)>=0) exit
                 end do
 
@@ -687,34 +674,7 @@ module fluorescence_mod
                 ! calculate the optical depth to the next cell wall
                 tauCell = dS*grid(gP)%opacity(grid(gP)%active(xP,yP,zP), enPacket%nuP)
 
-                if (lg1D) then
-                   if (nGrids>1) then
-                      print*, '! getVolumeLoc: 1D option and multiple grids options are not compatible'
-                      stop
-                   end if
-
-                   if (xP == 1) then
-
-                      dV = 4.*Pi* ( (grid(gP)%xAxis(xP+1)/1.e15)**3)/3.
-
-
-                   else if ( xP==grid(gP)%nx) then
-
-                      dV = Pi* ( (3.*(grid(gP)%xAxis(xP)/1.e15)-(grid(gP)%xAxis(xP-1)/1.e15))**3 - &
-                           & ((grid(gP)%xAxis(xP)/1.e15)+(grid(gP)%xAxis(xP-1)/1.e15))**3 ) / 6.
-
-                   else
-
-                      dV = Pi* ( ((grid(gP)%xAxis(xP+1)/1.e15)+(grid(gP)%xAxis(xP)/1.e15))**3 - &
-                           & ((grid(gP)%xAxis(xP-1)/1.e15)+(grid(gP)%xAxis(xP)/1.e15))**3 ) / 6.
-
-                   end if
-
-                   dV = dV/8.
-
-                else
-
-                   if ( (xP>1) .and. (xP<grid(gP)%nx) ) then
+                if ( (xP>1) .and. (xP<grid(gP)%nx) ) then
 
                       dx = abs(grid(gP)%xAxis(xP+1)-grid(gP)%xAxis(xP-1))/2.
                    else if ( xP==1 ) then
@@ -758,8 +718,6 @@ module fluorescence_mod
 
                    ! calculate the volume
                    dV = dx*dy*dz
-
-                end if
 
                 ! check if the packet interacts within this cell
                 if ((absTau+tauCell > passProb) .and. (grid(gP)%active(xP,yP,zP)>0)) then

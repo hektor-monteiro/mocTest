@@ -1767,7 +1767,7 @@ module emission_mod
                         dSx = grids(gP)%xAxis(grids(gP)%nx)
                      end if
 
-                     if (.not.lg1D) then
+
                         if (uHat%y>0.) then
                            if (yP<grids(gP)%ny) then
                               dSy = ( (grids(gP)%yAxis(yP+1)+grids(gP)%yAxis(yP))/2.-rVec%y)/uHat%y
@@ -1828,12 +1828,7 @@ module emission_mod
                            dSz = grids(gP)%zAxis(grids(gP)%nz)
                         end if
 
-                     else
 
-                        print*, '! setResLineEscapeProb: oneD option not yet implemented for res line transfer routine'
-                        stop
-
-                     end if
 
 
                      ! cater for cells on cell wall
@@ -1965,7 +1960,6 @@ module emission_mod
                      end if
 
                      ! and update current grid indeces
-                     if (.not.lg1D) then
                         if ( (dS == dSx) .and. (uHat%x > 0.)  ) then
                            xP = xP+1
                         else if ( (dS == dSx) .and. (uHat%x < 0.) ) then
@@ -1979,17 +1973,6 @@ module emission_mod
                         else if ( (dS == dSz) .and. (uHat%z < 0.) ) then
                            zP = zP-1
                         end if
-                     else
-
-                        print*, '! setResLineEscapeProb: oneD option not yet implemented for res line transfer routine'
-                        stop
-
-                        radius = 1.e10*sqrt((rVec%x/1.e10)*(rVec%x/1.e10) + &
-                             & (rVec%y/1.e10)*(rVec%y/1.e10) + &
-                             & (rVec%z/1.e10)*(rVec%z/1.e10))
-                        call locate(grids(gP)%xAxis, radius , xP)
-
-                     end if
 
                      if(lgPlaneIonization) then
 

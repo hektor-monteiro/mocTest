@@ -162,11 +162,7 @@ program MoCaSSiNplot
     do iG = 1, nGrids
 
 
-       if (lg2D) then
-          yP = 1
-       else
-          yP = grid3D(iG)%ny
-       end if
+       yP = grid3D(iG)%ny
 
        do i = 1, grid3D(iG)%nx
           do j = 1, yP

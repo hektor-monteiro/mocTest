@@ -25,11 +25,11 @@ module photon_mod
     type volume_storage
         real, allocatable :: v(:,:,:)
     end type volume_storage
-    
+
     type(volume_storage), allocatable :: cell_volumes(:)
     logical                           :: volumes_initialized = .false.
     ! ------------------------------------------
-    
+
     contains
 
     subroutine energyPacketDriver(iStar, n, grid, gpLoc, cellLoc)
@@ -72,7 +72,7 @@ module photon_mod
         if (iStar == 0) then
            deltaE(0) = grid(gpLoc)%LdiffuseLoc(grid(gpLoc)%active(cellLoc(1),cellLoc(2),cellLoc(3)))/NphotonsDiffuseLoc
         end if
-        
+
         ! --- NEW: Initialize volumes if not already done ---
         call initCellVolumes(grid)
         ! ---------------------------------------------------
@@ -320,12 +320,12 @@ module photon_mod
 
             character(len=7), intent(inout)     :: chType           ! stellar or diffuse?
 
-            if (reRun == 1) then 
+            if (reRun == 1) then
                start_weight = enPacket%weight
             else
                start_weight = 1.0
             endif
-            
+
             !print*, reRun, chType, enPacket%weight
 
             if (gP==1) then
@@ -380,11 +380,11 @@ module photon_mod
                      &zP=zP, gP=gP, difSource = noCellLoc)
 
             end select
-            
+
             enPacket%weight = start_weight
-            
+
             !print*, reRun, chType, enPacket%weight, enPacket%nuP
-                        
+
             reRun = 0
 
             if (.not.lgDust .and. enPacket%nu < ionEdge(1) .and. .not.enPacket%lgLine) then
@@ -735,9 +735,9 @@ module photon_mod
              end if
 
         end subroutine getNu
-        
+
         !#############################################################################
-        
+
 ! this subroutine determines the frequency of a newly created photon packet
         ! according to the given probability density
         ! optimized: utilizes bisection (binary search) to locate nu on array
@@ -772,8 +772,8 @@ module photon_mod
                end if
             end do
 
-            ! Legacy clamp: The original code manually shifts indices away from 
-            ! the lower boundary and clamps the upper boundary. 
+            ! Legacy clamp: The original code manually shifts indices away from
+            ! the lower boundary and clamps the upper boundary.
             ! This prevents nuP=1 which causes zero-opacity divide-by-zero crashes.
             if (nuP < nbins - 1) then
                nuP = nuP + 1
@@ -786,8 +786,8 @@ module photon_mod
             end if
 
           end subroutine getNu2
-          
-          
+
+
         !#############################################################################
 
         ! this subroutine determines the frequency of a newly created photon packet
@@ -1174,8 +1174,8 @@ module photon_mod
 !        endif
 !        ! Apply the weight correction based on the composite scheme formula.
 !        weightFactor = 1.0 / (compXi + (1.0-compXi)*(alpha*exp( (1.0-alpha)*passProb )))
-!         
-         
+!
+
 
 
 !        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1187,7 +1187,7 @@ module photon_mod
 !        C = 1.0 / (1.0 + (tauMax - (alpha + 1.0)) * EXP(-alpha))
 !        ! --- 2. Calculate the CDF value at the boundary ---
 !        G_alpha = C * (1.0 - EXP(-alpha))
-!        
+!
 !        ! --- 3. Generate a uniform random number ---
 !        CALL RANDOM_NUMBER(random)
 
@@ -1213,8 +1213,8 @@ module photon_mod
 !            ! So, W = exp(-x) / (C * exp(-alpha))
 !            weightFactor = EXP(-passProb + alpha) / C
 !        END IF
-        
-        
+
+
     end subroutine calculate_pass_prob_and_weight
 
 
@@ -1250,7 +1250,7 @@ module photon_mod
           integer                         :: gP       ! grid index
           integer                         :: igpp     ! grid index 1=mother 2=sub
           integer                         :: safeLimit =1000 ! safe limit for the loop
-                                                      
+
           integer                         :: active_cell, abun_idx, n_species, comp_idx_start !auxiliary variables for checks on dust scattering
 
           character(len=7)                :: packetType ! stellar, diffuse, dustEmitted?
@@ -1342,16 +1342,6 @@ module photon_mod
           dSy = 0.
           dSz = 0.
 
-          if (lg1D) then
-             radius = 1.e10*sqrt((rVec%x/1.e10)*(rVec%x/1.e10) + &
-                  &                               (rVec%y/1.e10)*(rVec%y/1.e10) + &
-                  &                               (rVec%z/1.e10)*(rVec%z/1.e10))
-             call locate(grid(1)%xAxis, radius, xP)
-             if (nGrids > 1 .or. gP >1) then
-                print*, " ! pathSegment: multiple grids are not allowed in a 1D simulation"
-                stop
-             end if
-          end if
 
           ! initialize optical depth
           absTau = 0.
@@ -1380,8 +1370,8 @@ module photon_mod
 !             safeLimit=50000
 !!             safeLimit=500
 !          end if
-          
-          
+
+
           do i = 1, safeLimit
 
              do j = 1, safeLimit
@@ -1491,7 +1481,6 @@ module photon_mod
                    stop
                 end if
 
-                if (.not.lg1D) then
                    if (vHat%y>1.e-10) then
                       if (yP<grid(gP)%ny) then
                          dSy = ( (grid(gP)%yAxis(yP+1)+grid(gP)%yAxis(yP))/2.-rVec%y)*invVy
@@ -1577,10 +1566,9 @@ module photon_mod
                       stop
                    end if
 
-                end if
 
                 if (grid(gP)%active(xP,yP,zP)>=0) exit
-             
+
              end do ! j safe limit loop
 
              ! cater for cells on cell wall
@@ -1629,10 +1617,10 @@ module photon_mod
 
              ! find the volume of this cell via pre-calculated array
              dV = cell_volumes(gP)%v(xP,yP,zP)
-             
+
              !=============================================================
              ! force skip for high tau cells
-             if ( i == 1 .and. tauCell > 20.0) then 
+             if ( i == 1 .and. tauCell > 20.0) then
                 passProb = tauCell+1.0e-6
                 enPacket%weight = enPacket%weight / weightFactor * exp(-passProb)
                 !print*, tauCell, enPacket%weight
@@ -1803,7 +1791,7 @@ module photon_mod
                    call random_number(random)
 
                    random = 1.-random
-                   
+
                    if (random > probSca) then
                       lgScattered = .false.
                    else if (random <= probSca) then
@@ -1871,7 +1859,7 @@ module photon_mod
                              stop
                           end if
                          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                         
+
                       end if
 
                       ! packet is scattered by the grain
@@ -2090,7 +2078,6 @@ module photon_mod
                    end if
                 end if
 
-                if (.not.lg1D) then
                    if ( (dS == dSx) .and. (vHat%x > 0.)  ) then
                       xP = xP+1
                    else if ( (dS == dSx) .and. (vHat%x < 0.) ) then
@@ -2107,13 +2094,6 @@ module photon_mod
                       print*, '! pathSegment: insanity occurred in dS assignement &
                            & [dS,dSx,dSy,dSz,vHat]', dS,dSx,dSy,dSz,vHat
                    end if
-                else
-                   radius = 1.e10*sqrt((rVec%x/1.e10)*(rVec%x/1.e10) + &
-                        & (rVec%y/1.e10)*(rVec%y/1.e10) + &
-                        & (rVec%z/1.e10)*(rVec%z/1.e10))
-                   call locate(grid(gP)%xAxis, radius , xP)
-
-                end if
 
                 ! be 6/6/06
                 if(.not.lgPlaneIonization.and..not.lgSymmetricXYZ) then
@@ -2966,7 +2946,7 @@ module photon_mod
 
 
          end if
-         
+
          !print*, i, reRun, lgScattered, chTypeIn, enPacket%weight, weightFactor, enPacket%nuP, tauCell, absTau, passProb, probSca
 
       end do ! safelimit loop
@@ -3002,9 +2982,9 @@ module photon_mod
       inY =  enPacket%yP(1:2)
       inZ =  enPacket%zP(1:2)
       gPIn = gP
-      
+
       reRun = 1
-      
+
       return
 
     end subroutine pathSegment
@@ -3250,10 +3230,10 @@ end subroutine energyPacketDriver
         if (.not. volumes_initialized) then
             numGrids = size(grid)
             allocate(cell_volumes(numGrids))
-            
+
             do ig = 1, numGrids
                 allocate(cell_volumes(ig)%v(grid(ig)%nx, grid(ig)%ny, grid(ig)%nz))
-                
+
                 do ix = 1, grid(ig)%nx
                     do iy = 1, grid(ig)%ny
                         do iz = 1, grid(ig)%nz
@@ -3262,13 +3242,9 @@ end subroutine energyPacketDriver
                     end do
                 end do
             end do
-            
+
             volumes_initialized = .true.
         end if
     end subroutine initCellVolumes
 
  end module photon_mod
-
-
-
-
